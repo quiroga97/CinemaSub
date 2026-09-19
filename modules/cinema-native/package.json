@@ -1,0 +1,9 @@
+{
+  "name": "cinema-native",
+  "version": "0.1.0",
+  "description": "Pipeline nativo CinemaSubs: captura de audio, transcripción (SpeechAnalyzer), traducción on-device y programación de subtítulos. Todo el procesamiento vive en Swift; JS solo recibe eventos ligeros.",
+  "main": "src/index.ts",
+  "license": "UNLICENSED",
+  "private": true,
+  "sideEffects": false
+}

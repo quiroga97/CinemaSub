@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "CinemaSubs",
+    "slug": "cinemasubs",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "cinemasub",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#000000",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.cinemasubs.app",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "El micrófono se utiliza únicamente mientras los subtítulos están activos, para transcribir el audio de la película y traducirlo al español. No se guarda ninguna grabación."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#000000",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "26.0",
+            "newArchEnabled": true
+          }
+        }
+      ]
+    ]
+  }
+}
