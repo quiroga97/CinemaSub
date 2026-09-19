@@ -14,6 +14,7 @@ enum Log {
     case audioSessionActivated
     case audioSessionInterrupted
     case audioEngineFailure
+    case speechAnalyzerFailure
     case speechPartialReceived
     case speechFinalReceived
     case stableCandidateEmitted
