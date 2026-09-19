@@ -68,16 +68,21 @@ jobs:
           set -euo pipefail
           cd ios
           ls -la
-          WORKSPACE=$(ls -d *.xcworkspace 2>/dev/null | head -1)
-          if [ -z "$WORKSPACE" ]; then
-            echo "::error::No se encontró xcworkspace en ios/"
+          # prebuild actual puede integrar pods SIN workspace: preferir workspace, si no proyecto
+          TARGET_ARGS=()
+          if WS=$(ls -d *.xcworkspace 2>/dev/null | head -1) && [ -n "$WS" ]; then
+            TARGET_ARGS=(-workspace "$WS")
+          elif PROJ=$(ls -d *.xcodeproj 2>/dev/null | head -1) && [ -n "$PROJ" ]; then
+            TARGET_ARGS=(-project "$PROJ")
+          else
+            echo "::error::No se encontró xcworkspace ni xcodeproj en ios/"
             exit 1
           fi
-          SCHEME=$(xcodebuild -list -workspace "$WORKSPACE" 2>/dev/null \
+          SCHEME=$(xcodebuild -list "${TARGET_ARGS[@]}" 2>/dev/null \
             | sed -n '/Schemes:/,$p' | tail -n +2 | sed '/^$/d' | head -1)
-          echo "workspace=$WORKSPACE scheme=$SCHEME"
+          echo "target=${TARGET_ARGS[*]} scheme=$SCHEME"
           xcodebuild archive \
-            -workspace "$WORKSPACE" \
+            "${TARGET_ARGS[@]}" \
             -scheme "$SCHEME" \
             -configuration Release \
             -archivePath ../build/CinemaSubs.xcarchive \
