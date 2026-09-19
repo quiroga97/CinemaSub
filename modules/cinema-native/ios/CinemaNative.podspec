@@ -7,6 +7,7 @@ Pod::Spec.new do |s|
   s.author         = ''
   s.homepage       = 'https://github.com/cinemasubs/cinema-native'
   s.license        = 'UNLICENSED'
+  s.source         = { git: '' }
 
   s.platforms      = {
     ios: '26.0'
