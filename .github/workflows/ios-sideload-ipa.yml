@@ -85,10 +85,19 @@ jobs:
             echo "::error::No se encontró xcworkspace ni xcodeproj en ios/"
             exit 1
           fi
-          SCHEME=$(xcodebuild -list "${TARGET_ARGS[@]}" 2>/dev/null \
+          ALL_SCHEMES=$(xcodebuild -list "${TARGET_ARGS[@]}" 2>/dev/null \
             | sed -n '/Schemes:/,$p' | tail -n +2 \
-            | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e '/^$/d' | head -1)
-          echo "target=${TARGET_ARGS[*]} scheme=$SCHEME"
+            | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e '/^$/d')
+          TARGET_NAME=$(basename "${TARGET_ARGS[1]}")
+          TARGET_NAME="${TARGET_NAME%.xcworkspace}"
+          TARGET_NAME="${TARGET_NAME%.xcodeproj}"
+          # preferir el scheme homónimo al proyecto (los schemes de pods ordenan antes)
+          if echo "$ALL_SCHEMES" | grep -qx "$TARGET_NAME"; then
+            SCHEME="$TARGET_NAME"
+          else
+            SCHEME=$(echo "$ALL_SCHEMES" | head -1)
+          fi
+          echo "target=${TARGET_ARGS[*]} scheme=$SCHEME (disponibles: $(echo "$ALL_SCHEMES" | tr '\n' ' '))"
           xcodebuild build \
             "${TARGET_ARGS[@]}" \
             -scheme "$SCHEME" \
