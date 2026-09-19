@@ -11,6 +11,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.cinemasubs.app",
+      "deploymentTarget": "26.4",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "El micrófono se utiliza únicamente mientras los subtítulos están activos, para transcribir el audio de la película y traducirlo al español. No se guarda ninguna grabación."
       }
@@ -28,16 +29,7 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-router",
-      [
-        "expo-build-properties",
-        {
-          "ios": {
-            "deploymentTarget": "26.0",
-            "newArchEnabled": true
-          }
-        }
-      ]
+      "expo-router"
     ]
   }
 }

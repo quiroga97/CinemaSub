@@ -55,6 +55,10 @@ export interface PipelineMetrics {
   speechFinalLatencyMs?: number;
   translationLatencyMs?: number;
   totalSubtitleLatencyMs?: number;
+  /** p50 de la latencia total (ventana móvil) */
+  medianTotalLatencyMs?: number;
+  /** p95 de la latencia total (ventana móvil) */
+  p95TotalLatencyMs?: number;
   segmentsPerMinute: number;
   translationCancellationCount: number;
   droppedSegmentCount: number;
