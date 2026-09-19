@@ -14,12 +14,17 @@ final class TranslationService: @unchecked Sendable {
   private let source: Locale.Language
   private let target: Locale.Language
   private let strategy: TranslationSession.Strategy
+  /// identificadores como String (Locale.Language no expone .identifier directamente)
+  private let sourceCode: String
+  private let targetCode: String
 
   init(
     sourceIdentifier: String = "en",
     targetIdentifier: String = "es",
     strategy: TranslationSession.Strategy = .lowLatency
   ) {
+    self.sourceCode = sourceIdentifier
+    self.targetCode = targetIdentifier
     self.source = Locale.Language(identifier: sourceIdentifier)
     self.target = Locale.Language(identifier: targetIdentifier)
     self.strategy = strategy
@@ -38,7 +43,7 @@ final class TranslationService: @unchecked Sendable {
         preferredStrategy: strategy
       )
     } catch {
-      throw CinemaError.translationModelMissing(source: source.identifier, target: target.identifier)
+      throw CinemaError.translationModelMissing(source: sourceCode, target: targetCode)
     }
   }
 
@@ -54,16 +59,16 @@ final class TranslationService: @unchecked Sendable {
     let currentSession = session
     lock.unlock()
     guard let currentSession else {
-      throw CinemaError.translationModelMissing(source: source.identifier, target: target.identifier)
+      throw CinemaError.translationModelMissing(source: sourceCode, target: targetCode)
     }
     do {
       let response = try await currentSession.translate(text)
       return response.targetText
     } catch let error as TranslationError {
-      if error.code == .notInstalled {
-        throw CinemaError.translationModelMissing(source: source.identifier, target: target.identifier)
+      if case .notInstalled = error {
+        throw CinemaError.translationModelMissing(source: sourceCode, target: targetCode)
       }
-      throw CinemaError.translationFailure(reason: String(describing: error.code))
+      throw CinemaError.translationFailure(reason: String(describing: error))
     } catch is CancellationError {
       throw CancellationError()
     } catch {

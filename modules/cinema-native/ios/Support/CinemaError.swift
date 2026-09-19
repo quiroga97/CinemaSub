@@ -13,6 +13,7 @@ enum CinemaError: Error, Sendable {
   case interruption(reason: String)
   case notAvailableOnDevice(minimumOS: String)
   case sessionNotRunning
+  case sessionAlreadyRunning
 
   var code: String {
     switch self {
@@ -27,6 +28,7 @@ enum CinemaError: Error, Sendable {
     case .interruption: return "E_INTERRUPTED"
     case .notAvailableOnDevice: return "E_NOT_SUPPORTED"
     case .sessionNotRunning: return "E_NO_SESSION"
+    case .sessionAlreadyRunning: return "E_SESSION_RUNNING"
     }
   }
 
@@ -54,6 +56,8 @@ enum CinemaError: Error, Sendable {
       return "Esta función requiere iOS \(minimumOS) o superior."
     case .sessionNotRunning:
       return "No hay ninguna sesión activa."
+    case .sessionAlreadyRunning:
+      return "Ya hay una sesión de subtítulos activa. Deténla primero."
     }
   }
 }

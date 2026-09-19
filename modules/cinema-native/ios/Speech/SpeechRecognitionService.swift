@@ -47,7 +47,7 @@ final class SpeechRecognitionService: @unchecked Sendable {
     guard !isRunning else { return }
 
     // 1) módulo transcriptor: parciales volátiles + timestamps de audio
-    var reportingOptions: SpeechTranscriber.ReportingOption = [.volatileResults]
+    var reportingOptions: Set<SpeechTranscriber.ReportingOption> = [.volatileResults]
     if fastResults {
       // sesga hacia capacidad de respuesta (más rápido, menos preciso); ajustable
       reportingOptions.insert(.fastResults)

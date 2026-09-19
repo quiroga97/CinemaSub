@@ -59,56 +59,42 @@ public class CinemaNativeModule: Module {
 
     // MARK: Preparación offline
 
-    AsyncFunction("prepareOfflineModels") { (source: String, target: String, promise: Promise) in
+    AsyncFunction("prepareOfflineModels") { (source: String, target: String) async throws -> Bool in
       let module = self
-      Task {
-        do {
-          module.emitStatus(.preparing)
+      module.emitStatus(.preparing)
 
-          // 1) modelo de speech EN con progreso real (AssetInventory)
-          try await SpeechModelManager.install(localeIdentifier: source) { progress in
-            module.sendEvent("onModelDownloadProgress", [
-              "model": "speech",
-              "progress": progress,
-            ])
-          }
-
-          // 2) pack de traducción EN→ES (descarga con consentimiento vía UI del sistema)
-          let sourceLanguage = Locale.Language(identifier: Self.languageCode(from: source))
-          let targetLanguage = Locale.Language(identifier: Self.languageCode(from: target))
-          module.sendEvent("onModelDownloadProgress", [
-            "model": "translation",
-            "progress": 0.1,
-          ])
-          let installed = await TranslationModelManager.requestInstallIfNeeded(
-            source: sourceLanguage,
-            target: targetLanguage
-          )
-          module.sendEvent("onModelDownloadProgress", [
-            "model": "translation",
-            "progress": 1.0,
-          ])
-          guard installed else {
-            let error = CinemaError.translationModelMissing(
-              source: sourceLanguage.identifier,
-              target: targetLanguage.identifier
-            )
-            module.emitError(error)
-            module.emitStatus(.error)
-            promise.reject(error.code, error.userMessage)
-            return
-          }
-
-          module.emitStatus(.idle)
-          promise.resolve(nil)
-        } catch {
-          let error = error as? CinemaError
-            ?? .speechModelMissing(locale: source)
-          module.emitError(error)
-          module.emitStatus(.error)
-          promise.reject(error.code, error.userMessage)
-        }
+      // 1) modelo de speech EN con progreso real (AssetInventory)
+      try await SpeechModelManager.install(localeIdentifier: source) { progress in
+        module.sendEvent("onModelDownloadProgress", [
+          "model": "speech",
+          "progress": progress,
+        ])
       }
+
+      // 2) pack de traducción EN→ES (descarga con consentimiento vía UI del sistema)
+      let sourceCode = Self.languageCode(from: source)
+      let targetCode = Self.languageCode(from: target)
+      module.sendEvent("onModelDownloadProgress", [
+        "model": "translation",
+        "progress": 0.1,
+      ])
+      let installed = await TranslationModelManager.requestInstallIfNeeded(
+        source: Locale.Language(identifier: sourceCode),
+        target: Locale.Language(identifier: targetCode)
+      )
+      module.sendEvent("onModelDownloadProgress", [
+        "model": "translation",
+        "progress": 1.0,
+      ])
+      guard installed else {
+        let error = CinemaError.translationModelMissing(source: sourceCode, target: targetCode)
+        module.emitError(error)
+        module.emitStatus(.error)
+        throw error
+      }
+
+      module.emitStatus(.idle)
+      return true
     }
 
     AsyncFunction("getOfflineStatus") { () async -> [String: Any?] in
@@ -128,60 +114,51 @@ public class CinemaNativeModule: Module {
 
     // MARK: Sesión
 
-    AsyncFunction("startSession") { (options: StartSessionRecord, promise: Promise) in
+    AsyncFunction("startSession") { (options: StartSessionRecord) async throws in
       let module = self
       module.pipelineLock.lock()
       let existing = module.pipeline
       module.pipelineLock.unlock()
       guard existing == nil else {
-        promise.reject("E_SESSION_ALREADY_RUNNING", "Ya hay una sesión activa. Detenla primero.")
-        return
+        let error = CinemaError.sessionAlreadyRunning
+        module.emitError(error)
+        throw error
       }
-      Task {
-        do {
-          let locale = try await SpeechRecognitionService.validateSupport(
-            localeIdentifier: options.sourceLanguage
-          )
-          let pipeline = CinemaPipeline(
-            includeOriginalText: options.includeOriginalText,
-            handlers: PipelineHandlers(
-              onStatus: { status in module.emitStatus(status) },
-              onSubtitle: { subtitle in module.emitSubtitle(subtitle) },
-              onMetrics: { snapshot in module.emitMetrics(snapshot) },
-              onError: { error in module.emitError(error) }
-            )
-          )
-          module.pipelineLock.lock()
-          module.pipeline = pipeline
-          module.pipelineLock.unlock()
 
-          try await pipeline.start(locale: locale, fastResults: options.latencyMode == "low")
-          promise.resolve(nil)
-        } catch {
-          module.clearPipeline()
-          let cinemaError = (error as? CinemaError) ?? .speechAnalyzerFailure(reason: String(describing: error))
-          module.emitError(cinemaError)
-          module.emitStatus(.error)
-          promise.reject(cinemaError.code, cinemaError.userMessage)
-        }
-      }
-    }
-
-    AsyncFunction("stopSession") { (promise: Promise) in
-      let module = self
+      let locale = try await SpeechRecognitionService.validateSupport(
+        localeIdentifier: options.sourceLanguage
+      )
+      let pipeline = CinemaPipeline(
+        includeOriginalText: options.includeOriginalText,
+        handlers: PipelineHandlers(
+          onStatus: { status in module.emitStatus(status) },
+          onSubtitle: { subtitle in module.emitSubtitle(subtitle) },
+          onMetrics: { snapshot in module.emitMetrics(snapshot) },
+          onError: { error in module.emitError(error) }
+        )
+      )
       module.pipelineLock.lock()
-      let pipeline = module.pipeline
-      module.pipeline = nil
+      module.pipeline = pipeline
       module.pipelineLock.unlock()
-      Task {
-        await pipeline?.stop()
-        promise.resolve(nil)
+
+      do {
+        try await pipeline.start(locale: locale, fastResults: options.latencyMode == "low")
+      } catch {
+        module.clearPipeline()
+        let cinemaError = (error as? CinemaError) ?? .speechAnalyzerFailure(reason: String(describing: error))
+        module.emitError(cinemaError)
+        module.emitStatus(.error)
+        throw cinemaError
       }
     }
 
-    AsyncFunction("setSubtitleDelay") { (milliseconds: Double, promise: Promise) in
+    AsyncFunction("stopSession") { () async in
+      let pipeline = self.takePipeline()
+      await pipeline?.stop()
+    }
+
+    AsyncFunction("setSubtitleDelay") { (milliseconds: Double) in
       self.pipeline?.setDelay(milliseconds / 1000.0)
-      promise.resolve(nil)
     }
 
     AsyncFunction("getMetrics") { () -> [String: Any?] in
@@ -192,29 +169,29 @@ public class CinemaNativeModule: Module {
 
     // Foreground-only por diseño: al backgroundear se detiene la sesión de forma segura.
     OnAppEntersBackground {
-      let module = self
+      let pipeline = self.takePipeline()
       Task {
-        module.pipelineLock.lock()
-        let pipeline = module.pipeline
-        module.pipeline = nil
-        module.pipelineLock.unlock()
         await pipeline?.stop()
       }
     }
 
     OnDestroy {
-      let module = self
+      let pipeline = self.takePipeline()
       Task {
-        module.pipelineLock.lock()
-        let pipeline = module.pipeline
-        module.pipeline = nil
-        module.pipelineLock.unlock()
         await pipeline?.stop()
       }
     }
   }
 
   // MARK: - Privados
+
+  private func takePipeline() -> CinemaPipeline? {
+    pipelineLock.lock()
+    defer { pipelineLock.unlock() }
+    let pipeline = self.pipeline
+    self.pipeline = nil
+    return pipeline
+  }
 
   private func clearPipeline() {
     pipelineLock.lock()

@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
   s.source         = { git: '' }
 
   s.platforms      = {
-    ios: '26.0'
+    ios: '26.4'
   }
 
   s.static_framework = true

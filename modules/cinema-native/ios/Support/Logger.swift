@@ -13,6 +13,7 @@ enum Log {
     case pipelineStopped
     case audioSessionActivated
     case audioSessionInterrupted
+    case audioEngineFailure
     case speechPartialReceived
     case speechFinalReceived
     case stableCandidateEmitted
