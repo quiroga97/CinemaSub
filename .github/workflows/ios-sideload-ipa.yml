@@ -67,9 +67,18 @@ jobs:
         run: |
           set -euo pipefail
           cd ios
+          ls -la
+          WORKSPACE=$(ls -d *.xcworkspace 2>/dev/null | head -1)
+          if [ -z "$WORKSPACE" ]; then
+            echo "::error::No se encontró xcworkspace en ios/"
+            exit 1
+          fi
+          SCHEME=$(xcodebuild -list -workspace "$WORKSPACE" 2>/dev/null \
+            | sed -n '/Schemes:/,$p' | tail -n +2 | sed '/^$/d' | head -1)
+          echo "workspace=$WORKSPACE scheme=$SCHEME"
           xcodebuild archive \
-            -workspace CinemaSubs.xcworkspace \
-            -scheme CinemaSubs \
+            -workspace "$WORKSPACE" \
+            -scheme "$SCHEME" \
             -configuration Release \
             -archivePath ../build/CinemaSubs.xcarchive \
             -destination 'generic/platform=iOS' \
