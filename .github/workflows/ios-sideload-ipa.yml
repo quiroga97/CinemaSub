@@ -102,10 +102,17 @@ jobs:
       - name: Empaquetar IPA sin firmar
         run: |
           set -euo pipefail
-          cd build/CinemaSubs.xcarchive/Products/Applications
-          mkdir -p "$OLDPWD/Payload"
-          cp -R CinemaSubs.app "$OLDPWD/Payload/"
-          cd "$OLDPWD"
+          ARCHIVE=$(find . -maxdepth 4 -name '*.xcarchive' -type d 2>/dev/null | head -1)
+          if [ -z "$ARCHIVE" ]; then
+            echo "::error::No se encontró xcarchive"
+            find . -maxdepth 3 -type d -name build 2>/dev/null
+            exit 1
+          fi
+          APP=$(find "$ARCHIVE" -name '*.app' -type d | head -1)
+          echo "archive=$ARCHIVE app=$APP"
+          rm -rf Payload
+          mkdir Payload
+          cp -R "$APP" Payload/
           zip -qry CinemaSubs-unsigned.ipa Payload
           ls -lh CinemaSubs-unsigned.ipa
 
