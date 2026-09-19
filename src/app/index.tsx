@@ -1,6 +1,7 @@
-import { Link } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCinema } from '../state/CinemaContext';
 import { colors, fonts, layout } from '../theme';
 
@@ -17,62 +18,68 @@ function ModelRow({ label, ready }: { label: string; ready: boolean | undefined 
 
 export default function HomeScreen() {
   const { offline, preparing, prepareOffline, capabilities, error } = useCinema();
+  const router = useRouter();
 
   const modelsReady =
     offline?.speechEnglishInstalled === true && offline?.translationSpanishInstalled === true;
 
   return (
-    <View style={styles.screen}>
-      <View style={styles.hero}>
-        <Text style={styles.title}>CinemaSubs</Text>
-        <Text style={styles.subtitle}>English → Español</Text>
-      </View>
+    <SafeAreaView style={styles.screen}>
+      <View style={styles.content}>
+        <View style={styles.hero}>
+          <Text style={styles.title}>CinemaSubs</Text>
+          <Text style={styles.subtitle}>English → Español</Text>
+        </View>
 
-      <View style={styles.statusCard}>
-        <ModelRow
-          label="Speech English (on-device)"
-          ready={offline?.speechEnglishInstalled}
-        />
-        <ModelRow
-          label="Translation English → Español"
-          ready={offline?.translationSpanishInstalled}
-        />
-        {modelsReady ? (
-          <Text style={styles.offlineOk}>✓ Funciona sin conexión</Text>
-        ) : (
-          <Text style={styles.offlinePending}>
-            Prepara los modelos antes de entrar al cine
-          </Text>
-        )}
-        {capabilities && !capabilities.supportsSpeechAnalyzer ? (
-          <Text style={styles.offlinePending}>
-            Este dispositivo no soporta SpeechAnalyzer (se requiere iOS 26+)
-          </Text>
-        ) : null}
-      </View>
+        <View style={styles.statusCard}>
+          <ModelRow
+            label="Speech English (on-device)"
+            ready={offline?.speechEnglishInstalled}
+          />
+          <ModelRow
+            label="Translation English → Español"
+            ready={offline?.translationSpanishInstalled}
+          />
+          {modelsReady ? (
+            <Text style={styles.offlineOk}>✓ Funciona sin conexión</Text>
+          ) : (
+            <Text style={styles.offlinePending}>
+              Prepara los modelos antes de entrar al cine
+            </Text>
+          )}
+          {capabilities && !capabilities.supportsSpeechAnalyzer ? (
+            <Text style={styles.offlinePending}>
+              Este dispositivo no soporta SpeechAnalyzer (se requiere iOS 26+)
+            </Text>
+          ) : null}
+        </View>
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+        {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      <View style={styles.actions}>
-        <Pressable
-          style={[styles.button, styles.secondaryButton]}
-          onPress={() => void prepareOffline()}
-          disabled={preparing}
-          accessibilityRole="button"
-          accessibilityLabel="Preparar modo offline"
-        >
-          <Text style={styles.secondaryButtonText}>
-            {preparing ? 'Preparando…' : 'Preparar modo offline'}
-          </Text>
-        </Pressable>
+        <View style={styles.actions}>
+          <Pressable
+            style={[styles.button, styles.secondaryButton]}
+            onPress={() => void prepareOffline()}
+            disabled={preparing}
+            accessibilityRole="button"
+            accessibilityLabel="Preparar modo offline"
+          >
+            <Text style={styles.secondaryButtonText}>
+              {preparing ? 'Preparando…' : 'Preparar modo offline'}
+            </Text>
+          </Pressable>
 
-        <Link href="/cinema" asChild>
-          <Pressable style={[styles.button, styles.primaryButton]} accessibilityRole="button" accessibilityLabel="Iniciar subtítulos">
+          <Pressable
+            style={[styles.button, styles.primaryButton]}
+            onPress={() => router.push('/cinema')}
+            accessibilityRole="button"
+            accessibilityLabel="Iniciar subtítulos"
+          >
             <Text style={styles.primaryButtonText}>INICIAR SUBTÍTULOS</Text>
           </Pressable>
-        </Link>
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -80,6 +87,9 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  content: {
+    flex: 1,
     paddingHorizontal: layout.screenPadding,
     justifyContent: 'center',
     gap: 32,
