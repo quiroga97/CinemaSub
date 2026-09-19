@@ -79,7 +79,8 @@ jobs:
             exit 1
           fi
           SCHEME=$(xcodebuild -list "${TARGET_ARGS[@]}" 2>/dev/null \
-            | sed -n '/Schemes:/,$p' | tail -n +2 | sed '/^$/d' | head -1)
+            | sed -n '/Schemes:/,$p' | tail -n +2 \
+            | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e '/^$/d' | head -1)
           echo "target=${TARGET_ARGS[*]} scheme=$SCHEME"
           xcodebuild archive \
             "${TARGET_ARGS[@]}" \
