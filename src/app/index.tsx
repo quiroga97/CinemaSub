@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCinema } from '../state/CinemaContext';
 import { colors, fonts, layout } from '../theme';
@@ -25,7 +25,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.hero}>
           <Text style={styles.title}>CinemaSubs</Text>
           <Text style={styles.subtitle}>English → Español</Text>
@@ -78,7 +78,7 @@ export default function HomeScreen() {
             <Text style={styles.primaryButtonText}>INICIAR SUBTÍTULOS</Text>
           </Pressable>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     paddingHorizontal: layout.screenPadding,
     justifyContent: 'center',
     gap: 32,

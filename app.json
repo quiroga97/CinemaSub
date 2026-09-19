@@ -3,7 +3,7 @@
     "name": "CinemaSubs",
     "slug": "cinemasubs",
     "version": "0.1.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "scheme": "cinemasub",
     "userInterfaceStyle": "dark",

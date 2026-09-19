@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DELAY_OPTIONS_MS } from '../components/CinemaControls';
 import { useCinema } from '../state/CinemaContext';
@@ -22,7 +22,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>Ajustes</Text>
 
         <Row label="Posición de subtítulos">
@@ -76,7 +76,7 @@ export default function SettingsScreen() {
         <Pressable style={styles.back} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Volver">
           <Text style={styles.backText}>Volver</Text>
         </Pressable>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     padding: layout.screenPadding,
     gap: 18,
   },

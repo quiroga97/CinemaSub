@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import type { CinemaSettings } from '../state/CinemaContext';
 import { colors, fonts } from '../theme';
 import { formatDelay } from '../utils/text';
@@ -33,7 +33,8 @@ export function CinemaControls({
 
   return (
     <View style={styles.panel} pointerEvents="auto">
-      <SectionLabel>Retardo</SectionLabel>
+      <ScrollView contentContainerStyle={styles.panelContent} keyboardShouldPersistTaps="handled">
+        <SectionLabel>Retardo</SectionLabel>
       <View style={styles.chipRow}>
         {DELAY_OPTIONS_MS.map((ms) => (
           <Pressable
@@ -110,6 +111,7 @@ export function CinemaControls({
       <Pressable style={styles.stopButton} onPress={onStop} accessibilityRole="button" accessibilityLabel="Detener subtítulos">
         <Text style={styles.stopButtonText}>Stop</Text>
       </Pressable>
+      </ScrollView>
     </View>
   );
 }
@@ -120,9 +122,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+    maxHeight: '78%',
     backgroundColor: 'rgba(0,0,0,0.96)',
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: '#222',
+  },
+  panelContent: {
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 34,
