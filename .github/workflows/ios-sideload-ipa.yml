@@ -63,6 +63,13 @@ jobs:
       - name: Prebuild (autolinking de modules/cinema-native)
         run: pnpm exec expo prebuild --platform ios
 
+      - name: Pod install (sincroniza sandbox con Podfile.lock)
+        run: |
+          set -euo pipefail
+          cd ios
+          ls Podfile* 2>/dev/null || true
+          pod install
+
       - name: Archive Release sin firmar
         run: |
           set -euo pipefail
