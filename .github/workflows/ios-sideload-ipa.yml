@@ -70,7 +70,7 @@ jobs:
           ls Podfile* 2>/dev/null || true
           pod install
 
-      - name: Archive Release sin firmar
+      - name: Compilar Release sin firmar
         run: |
           set -euo pipefail
           cd ios
@@ -89,12 +89,12 @@ jobs:
             | sed -n '/Schemes:/,$p' | tail -n +2 \
             | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e '/^$/d' | head -1)
           echo "target=${TARGET_ARGS[*]} scheme=$SCHEME"
-          xcodebuild archive \
+          xcodebuild build \
             "${TARGET_ARGS[@]}" \
             -scheme "$SCHEME" \
             -configuration Release \
-            -archivePath ../build/CinemaSubs.xcarchive \
             -destination 'generic/platform=iOS' \
+            -derivedDataPath ../build/DerivedData \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY=''
@@ -102,14 +102,13 @@ jobs:
       - name: Empaquetar IPA sin firmar
         run: |
           set -euo pipefail
-          ARCHIVE=$(find . -maxdepth 4 -name '*.xcarchive' -type d 2>/dev/null | head -1)
-          if [ -z "$ARCHIVE" ]; then
-            echo "::error::No se encontró xcarchive"
-            find . -maxdepth 3 -type d -name build 2>/dev/null
+          APP=$(find build/DerivedData/Build/Products -name '*.app' -type d 2>/dev/null | head -1)
+          if [ -z "$APP" ]; then
+            echo "::error::No se encontró .app en Products"
+            find build/DerivedData -maxdepth 4 -type d 2>/dev/null | head -30
             exit 1
           fi
-          APP=$(find "$ARCHIVE" -name '*.app' -type d | head -1)
-          echo "archive=$ARCHIVE app=$APP"
+          echo "app=$APP"
           rm -rf Payload
           mkdir Payload
           cp -R "$APP" Payload/
