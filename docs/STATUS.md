@@ -9,9 +9,10 @@
 | Wave 1 — Research (Apple + Expo/EAS) | ✅ done | `docs/research/APPLE_APIS.md` + `EXPO_EAS.md`, verificado contra fuentes oficiales vivas |
 | Architecture Gate | ✅ done | `docs/ARCHITECTURE.md` + `docs/DECISIONS.md` (D-001…D-016) |
 | Wave 2 — UI + módulo nativo | ✅ done | UI completa; pipeline Swift completo (audio/speech/traducción/estabilizador/scheduler/métricas/puente Expo) |
-| Wave 3 — Integración en dispositivo | ⏳ pendiente | Requiere build EAS + iPhone físico |
+| Wave 3 — Integración en dispositivo | 🟡 en curso | IPA compilada (CI verde tras 6 iteraciones); falta instalar en iPhone y probar |
 | Wave 4 — QA (soak 90 min, offline, interrupciones) | ⏳ pendiente | Plan: por escribir (`docs/QA_PLAN.md`) |
-| Build EAS iOS verde | ⏳ pendiente | Requiere `eas login` del usuario (ver abajo) |
+| Build iOS verde (GitHub Actions, vía gratuita) | ✅ done | Run 35445223531; IPA en `dist-sideload/CinemaSubs-unsigned.ipa` |
+| Build EAS iOS (vía Apple Developer de pago) | ⏳ pendiente | Opcional; solo si se paga la cuenta (ver docs/SIDELOAD_FREE.md) |
 
 ## Hecho y verificado localmente (Windows)
 
@@ -35,16 +36,15 @@
 
 ## Pendiente (orden)
 
-1. **[REQUIERE EL USUARIO]** `eas login` + Apple Developer → primer
-   `eas build --platform ios --profile development` (pasos exactos en docs/WINDOWS_SETUP.md).
-2. Iterar errores de compilación Swift si el build los expone (riesgos residuales
-   documentados: `AssetInstallationRequest.progress`, firma de `.translationTask`).
-3. Instalar en iPhone, probar vertical slice: mic → transcripción EN → evento → UI.
-4. Activar traducción: «Preparar modo offline» → test modo avión.
-5. Medir y fijar: ventana del estabilizador (250–700 ms), `.measurement` vs `.default`,
+1. **[REQUIERE EL USUARIO]** Conectar el iPhone 17 Pro Max por USB y firmar/instalar la IPA
+   con Sideloadly (ya instalado en el PC, junto con iTunes para drivers). Pasos exactos en
+   docs/SIDELOAD_FREE.md — la IPA ya está en `dist-sideload/CinemaSubs-unsigned.ipa`.
+2. Probar vertical slice en dispositivo: mic → transcripción EN → evento → UI.
+3. Activar traducción: «Preparar modo offline» → test modo avión.
+4. Medir y fijar: ventana del estabilizador (250–700 ms), `.measurement` vs `.default`,
    `fastResults` on/off (HUD de métricas).
-6. `docs/QA_PLAN.md` + `docs/PERFORMANCE.md`: soak 90 min, interrupciones, privacidad, térmico.
-7. Limpiezas: borrar `App.tsx`/`index.ts` (vestigios del template, ya inertes), iconos/splash propios.
+5. `docs/QA_PLAN.md` + `docs/PERFORMANCE.md`: soak 90 min, interrupciones, privacidad, térmico.
+6. Limpiezas: borrar `App.tsx`/`index.ts` (vestigios del template, ya inertes), iconos/splash propios.
 
 ## Bloqueos que requieren acción del usuario
 

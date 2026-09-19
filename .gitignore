@@ -44,3 +44,6 @@ yarn-error.*
 .mimosa/
 .video_agent/
 .trash/
+
+# sideload build outputs
+dist-sideload/
