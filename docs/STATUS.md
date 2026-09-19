@@ -49,7 +49,10 @@
 ## Bloqueos que requieren acción del usuario
 
 - Cuenta Expo + `eas login` (gratis).
-- Apple Developer Program (pago) para firmar/instalar en iPhone.
+- Apple Developer Program (pago) para firmar/instalar en iPhone físico **por la vía EAS**.
+  - Alternativa **gratuita** ya preparada: [docs/SIDELOAD_FREE.md](SIDELOAD_FREE.md)
+    (GitHub Actions genera IPA sin firmar; Sideloadly la firma con Apple ID gratis,
+    caducidad de 7 días impuesta por Apple).
 - iPhone físico iOS 26.4+ con UDID registrado (`eas device:create`) y Modo de desarrollador.
 
 ## Definition of Done (MVP) — del master prompt

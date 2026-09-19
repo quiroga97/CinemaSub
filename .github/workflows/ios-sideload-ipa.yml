@@ -1,0 +1,95 @@
+name: IPA sin firmar (instalación gratuita por sideload)
+
+# Compila CinemaSubs en Release SIN firmar, lista para re-firmar con un Apple ID
+# gratuito usando Sideloadly/AltStore en Windows. Ver docs/SIDELOAD_FREE.md.
+#
+# Coste: 0 € si el repo es público (runners macOS gratuitos en repos públicos).
+# En repo privado consumen minutos del plan (macOS = multiplicador 10x).
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '.gitignore'
+
+concurrency:
+  group: sideload-ipa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-unsigned-ipa:
+    runs-on: macos-latest
+    timeout-minutes: 90
+    env:
+      EXPO_NO_TELEMETRY: '1'
+      CI: 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Habilitar pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@12.4.2 --activate
+          pnpm -v
+
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+
+      - name: Verificar Xcode >= 26
+        run: |
+          xcodebuild -version
+          MAJOR=$(xcodebuild -version | awk '/^Xcode/ {print $2}' | cut -d. -f1)
+          if [ "${MAJOR:-0}" -lt 26 ]; then
+            echo "::error::Se requiere Xcode 26+ (imagen macos-latest debería traerlo)."
+            exit 1
+          fi
+
+      - name: Caché de CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: ios/Pods
+          key: pods-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Prebuild (autolinking de modules/cinema-native)
+        run: pnpm exec expo prebuild --platform ios
+
+      - name: Archive Release sin firmar
+        run: |
+          set -euo pipefail
+          cd ios
+          xcodebuild archive \
+            -workspace CinemaSubs.xcworkspace \
+            -scheme CinemaSubs \
+            -configuration Release \
+            -archivePath ../build/CinemaSubs.xcarchive \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=''
+
+      - name: Empaquetar IPA sin firmar
+        run: |
+          set -euo pipefail
+          cd build/CinemaSubs.xcarchive/Products/Applications
+          mkdir -p "$OLDPWD/Payload"
+          cp -R CinemaSubs.app "$OLDPWD/Payload/"
+          cd "$OLDPWD"
+          zip -qry CinemaSubs-unsigned.ipa Payload
+          ls -lh CinemaSubs-unsigned.ipa
+
+      - name: Subir artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: CinemaSubs-unsigned-ipa
+          path: CinemaSubs-unsigned.ipa
+          retention-days: 14

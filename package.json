@@ -2,6 +2,7 @@
   "name": "cinemasubs",
   "version": "0.1.0",
   "main": "expo-router/entry",
+  "packageManager": "pnpm@12.4.2",
   "dependencies": {
     "expo": "~57.0.24",
     "expo-brightness": "~57.0.2",

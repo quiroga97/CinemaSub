@@ -52,7 +52,8 @@ docs/                     # arquitectura, decisiones, research verificado, QA, o
 | [DECISIONS](docs/DECISIONS.md) | ADRs: versiones, APIs, target iOS 26.4, estrategia lowLatency |
 | [research/APPLE_APIS](docs/research/APPLE_APIS.md) | APIs Apple verificadas contra docs oficiales (2026-09-19) |
 | [research/EXPO_EAS](docs/research/EXPO_EAS.md) | Expo SDK 57 / EAS / pnpm verificados |
-| [WINDOWS_SETUP](docs/WINDOWS_SETUP.md) | De cero a dev build instalada, desde Windows |
+| [WINDOWS_SETUP](docs/WINDOWS_SETUP.md) | De cero a dev build instalada, desde Windows (vía Apple Developer) |
+| [SIDELOAD_FREE](docs/SIDELOAD_FREE.md) | Instalación **gratuita** en iPhone (GitHub Actions + Sideloadly, renovación 7 días) |
 | [BUILD](docs/BUILD.md) | Perfiles EAS, checklist, resolución de fallos |
 | [OFFLINE_MODE](docs/OFFLINE_MODE.md) | Preparación de modelos y test en modo avión |
 | [PRIVACY](docs/PRIVACY.md) | Privacidad by design y su verificación |
